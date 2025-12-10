@@ -1,0 +1,40 @@
+# .github/workflows/daily_news_report.yml
+
+name: Daily VRT NWS Report
+
+on:
+  schedule:
+    - cron: '0 17 * * *' 
+
+  workflow_dispatch:
+
+jobs:
+  generate_report:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x' 
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run news scraper script (Creates news_output.txt)
+      run: python scrape_news.py
+
+    # Deze stap overschrijft de README.md met de output
+    - name: Overwrite README.md
+      run: |
+        cat news_output.txt > README.md
+
+    # Deze stap commit de bijgewerkte README.md naar de repository
+    - name: Commit and Push README update
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: '🤖 Daily VRT NWS Update'
+        files: README.md
